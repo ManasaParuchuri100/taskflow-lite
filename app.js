@@ -1,56 +1,83 @@
-const form = document.getElementById("task-form");
-const input = document.getElementById("task-input");
-const taskList = document.getElementById("task-list");
-const taskCount = document.getElementById("task-count");
+const form =
+    document.getElementById("task-form");
+
+const input =
+    document.getElementById("task-input");
+
+const taskList =
+    document.getElementById("task-list");
+
+const taskCount =
+    document.getElementById("task-count");
+
+const completedCount =
+    document.getElementById("completed-count");
+
+const progressBar =
+    document.getElementById("progress-bar");
 
 let tasks =
-JSON.parse(
-    localStorage.getItem("tasks")
-) || [];
+    JSON.parse(
+        localStorage.getItem("tasks")
+    ) || [];
 
 renderTasks();
 
-function saveTasks(){
-
+function saveTasks() {
     localStorage.setItem(
         "tasks",
         JSON.stringify(tasks)
     );
 }
 
-form.addEventListener("submit", function(e){
+form.addEventListener(
+    "submit",
+    function (e) {
 
-    e.preventDefault();
+        e.preventDefault();
 
-    const taskText = input.value.trim();
+        const taskText =
+            input.value.trim();
 
-    if(taskText === ""){
-        alert("Please enter a task");
-        return;
+        if (taskText === "") {
+            alert(
+                "Please enter a task."
+            );
+            return;
+        }
+
+        const task = {
+            id: Date.now(),
+            text: taskText,
+            completed: false
+        };
+
+        tasks.push(task);
+
+        saveTasks();
+        renderTasks();
+
+        input.value = "";
     }
+);
 
-    const task = {
-        id: Date.now(),
-        text: taskText,
-        completed: false
-    };
-
-    tasks.push(task);
-
-    saveTasks();
-
-    renderTasks();
-
-    input.value = "";
-});
-
-function renderTasks(){
+function renderTasks() {
 
     taskList.innerHTML = "";
 
+    if (tasks.length === 0) {
+        taskList.innerHTML = `
+            <p class="empty-state">
+                🚀 No tasks yet.
+                Add your first task!
+            </p>
+        `;
+    }
+
     tasks.forEach(task => {
 
-        const li = document.createElement("li");
+        const li =
+            document.createElement("li");
 
         li.innerHTML = `
             <input
@@ -59,9 +86,13 @@ function renderTasks(){
                 data-id="${task.id}"
             >
 
-            <span class="${
-                task.completed ? "completed" : ""
-            }">
+            <span
+                class="${
+                    task.completed
+                        ? "completed"
+                        : ""
+                }"
+            >
                 ${task.text}
             </span>
 
@@ -69,42 +100,86 @@ function renderTasks(){
                 class="delete-btn"
                 data-id="${task.id}"
             >
-                ❌
+                🗑️
             </button>
         `;
 
         taskList.appendChild(li);
     });
 
-    taskCount.textContent = tasks.length;
+    const completed =
+        tasks.filter(
+            task => task.completed
+        ).length;
+
+    taskCount.textContent =
+        tasks.length;
+
+    completedCount.textContent =
+        completed;
+
+    const percentage =
+        tasks.length === 0
+            ? 0
+            : (completed /
+                tasks.length) * 100;
+
+    progressBar.style.width =
+        percentage + "%";
 }
 
-taskList.addEventListener("change", function(e){
+taskList.addEventListener(
+    "change",
+    function (e) {
 
-    if(e.target.type === "checkbox"){
+        if (
+            e.target.type ===
+            "checkbox"
+        ) {
 
-        const id = Number(e.target.dataset.id);
+            const id =
+                Number(
+                    e.target.dataset.id
+                );
 
-        const task = tasks.find(
-            task => task.id === id
-        );
+            const task =
+                tasks.find(
+                    task =>
+                        task.id === id
+                );
 
-        task.completed = e.target.checked;
+            task.completed =
+                e.target.checked;
 
-        renderTasks();
+            saveTasks();
+            renderTasks();
+        }
     }
-});
+);
 
-taskList.addEventListener("click", function(e){
+taskList.addEventListener(
+    "click",
+    function (e) {
 
-    if(e.target.classList.contains("delete-btn")){
+        if (
+            e.target.classList.contains(
+                "delete-btn"
+            )
+        ) {
 
-        const id = Number(e.target.dataset.id);
+            const id =
+                Number(
+                    e.target.dataset.id
+                );
 
-        tasks = tasks.filter(
-            task => task.id !== id
-        );
+            tasks =
+                tasks.filter(
+                    task =>
+                        task.id !== id
+                );
 
-        renderTasks();
+            saveTasks();
+            renderTasks();
+        }
     }
-});
+);
